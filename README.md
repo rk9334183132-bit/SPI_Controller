@@ -38,3 +38,12 @@ mosi (Mode 0)      XXXXX| Bit 7     | Bit 6    | ...| Bit 0     |XXXXXXXXXX
 mosi (Mode 1)      XXXXXXXXXXX\ Bit 7     / Bit 6   ... \ Bit 0 /XXXXXXXXXX
                         |     |     |      |   |    |     |     |
    [Action M1]                ^Shift       ^Sample        ^Shift    ^Sample
+SPI_Controller/
+├── rtl/
+│   ├── spi_master.v      # Core SPI protocol state execution engine
+│   └── spi_top.v         # Structural system wrapper and port boundary isolation
+├── tb/
+│   └── spi_tb.v          # Advanced self-checking randomized loopback testbench
+├── waveforms/
+│   └── spi_trace.vcd     # Generated multi-mode simulation trace file
+└── README.md             # Subsystem specification manual
