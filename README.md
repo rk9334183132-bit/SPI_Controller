@@ -40,6 +40,11 @@ mosi (Mode 1)      XXXXXXXXXXX\ Bit 7     / Bit 6   ... \ Bit 0 /XXXXXXXXXX
                         |     |     |      |   |    |     |     |
    [Action M1]                ^Shift       ^Sample        ^Shift    ^Sample
 ```
+---
+
+## ◆ Project Directory Structure
+
+```text
 SPI_Controller/
 ├── rtl/
 │   ├── spi_master.v      # Core SPI protocol state execution engine
