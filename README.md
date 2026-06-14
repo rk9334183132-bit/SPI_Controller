@@ -1,43 +1,40 @@
-# Parameterized Multi-Mode SPI Master Controller
+# ⚡ Parameterized Multi-Mode SPI Master Controller
 
-## Overview
-This repository contains a silicon-grade, fully synthesizable **SPI (Serial Peripheral Interface) Master Controller** implemented in Verilog HDL. Designed with industry-standard digital design methodologies, the controller features full parameterization of data width, dynamic clock division, and runtime support for all four standard SPI modes (Modes 0, 1, 2, and 3). 
+![Verilog](https://img.shields.io/badge/Language-Verilog%20HDL-blue)
+![Simulation](https://img.shields.io/badge/Simulator-Icarus%20Verilog-orange)
+![Waveforms](https://img.shields.io/badge/Viewer-GTKWave-green)
+![License](https://img.shields.io/badge/Design-Synthesizable%20IP-brightgreen)
 
-A comprehensive self-checking, loopback-enabled testbench environment is included to automate verification across all mode matrices using randomized stimulus.
-
-## Key Hardware Features
-* **Full SPI Mode Support:** Configurable Clock Polarity (`CPOL`) and Clock Phase (`CPHA`) parameters supporting Mode 0, Mode 1, Mode 2, and Mode 3.
-* **Fully Parameterized Data Width:** Scalable `DATA_WIDTH` supporting standard 8, 16, 32, or custom bit lengths.
-* **Dynamic Clock Divider:** A 16-bit parameterizable internal clock divider allowing safe SCLK derivation from high-frequency system clocks.
-* **Robust FSM Control:** Clean 3-state Finite State Machine (`IDLE`, `TRANSFER`, `TRAILING`) utilizing safe lookahead strobe triggers for clock edge detection to eliminate glitching.
-* **Clean Handshaking Interface:** Handshake signals (`start`, `ready`, `done`) simplify connection to a system-level SoC bus wrapper.
+A silicon-grade, fully parameterizable **SPI (Serial Peripheral Interface) Master Controller** subsystem designed in Verilog HDL. This IP features dynamic clock division configuration, variable data-width sizing, and support for all 4 standard SPI operational modes via structural phase lookahead edge synchronization. Includes a fully automated self-checking loopback testbench infrastructure with randomized test vectors.
 
 ---
 
-## Architecture Block Diagram
+## 🚀 Key Hardware Features
 
+* **🎛️ Complete 4-Mode Matrix:** Fully supports runtime protocol selection via `CPOL` (Clock Polarity) and `CPHA` (Clock Phase) parameters.
+* **📐 Fully Parameterized Data Width:** Scalable hardware word frames (`DATA_WIDTH`) with an auto-scaling internal countdown bit tracker.
+* **🕒 Dynamic Clock Divider Matrix:** Integrates a internal 16-bit step counter to derive custom $SCLK$ lines safely from high-speed system oscillators.
+* **🚫 Glitch-Free Clock Gating:** Eliminates output clock glitches at startup/shutdown boundaries by processing edges in the system clock domain.
+* **🤝 Clean Handshake Pipeline:** Simple structural interface (`start`, `ready`, `done`) designed for direct attachment to SoC bus wrappers.
+
+---
+
+## 📊 Hardware Timing Waveforms
+
+Since GitHub doesn't open `.vcd` files directly, here is how the controller shifts and samples bits based on edge configurations:
+
+### Protocol Timing Mechanics (Mode 0 vs Mode 1)
 ```text
-       +-----------------------------------------------------------------------+
-       |                              spi_top                                  |
-       |                                                                       |
-       |   -- cfg_cpol ----------> +-------------------------------------+     |
-       |   -- cfg_cpha ----------> |             spi_master              |     |
-       |   -- cfg_clk_div -------> |             (Core Engine)           |     |
-       |                           |                                     |     |
-       |   -- sys_tx_data [7:0] -> |  +---------------+                  |     |
-       |   -- sys_start ---------> |  | Shift Reg TX  | ---> mosi -------|------> (To Slave)
-       |   <- sys_ready ---------- |  +---------------+                  |     |
-       |   <- sys_done ----------- |                                     |     |
-       |   <- sys_rx_data [7:0] -- |  +---------------+                  |     |
-       |                           |  | Shift Reg RX  | <--- miso -------|------- (From Slave)
-       |                           |  +---------------+                  |     |
-       |                           |                                     |     |
-       |   -- clk ---------------> |  +---------------+                  |     |
-       |   -- rst_n -------------> |  | Clock Divider | ---> sclk -------|------> (To Slave)
-       |                           |  +---------------+                  |     |
-       |                           |                                     |     |
-       |                           |  +---------------+                  |     |
-       |                           |  |  Control FSM  | ---> cs_n -------|------> (To Slave)
-       |                           |  +---------------+                  |     |
-       |                           +-------------------------------------+     |
-       +-----------------------------------------------------------------------+
+                    ____   Transaction Active   ___________________________
+cs_n               |    \____________________  ...  _______________________/
+                        |                    |      |
+sclk (Idle Low)    _____|      /---\        /-\     |      /---\
+                        \_____/     \______/   \.../______/     \__________
+                        |     |     |      |   |    |     |     |
+mosi (Mode 0)      XXXXX| Bit 7     | Bit 6    | ...| Bit 0     |XXXXXXXXXX
+                        |     |     |      |   |    |     |     |
+   [Action M0]          ^Shift      ^Sample    ^Shift     ^Sample   ^Idle
+                        |           |          |          |
+mosi (Mode 1)      XXXXXXXXXXX\ Bit 7     / Bit 6   ... \ Bit 0 /XXXXXXXXXX
+                        |     |     |      |   |    |     |     |
+   [Action M1]                ^Shift       ^Sample        ^Shift    ^Sample
