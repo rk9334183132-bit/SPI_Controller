@@ -20,6 +20,7 @@ A silicon-grade, fully parameterizable **SPI (Serial Peripheral Interface) Maste
 ---
 
 ## ◆ Hardware Timing Waveforms
+![GTKWave Verification Waveforms](waveforms/wave.png.png)
 
 Since GitHub doesn't render `.vcd` trace files directly, here is the architectural timing relationship demonstrating how the controller shifts and samples bits on the serial lines:
 
